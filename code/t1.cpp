@@ -11,7 +11,7 @@ constexpr size_t MAX_COST = 3; // Costo máximo promedio permitido
 
 // Función de Hash h(y)
 // Devuelve un valor random entre 0 y 2^64 − 1 para cualquier elemento
-long long h(int y){
+long long h(long long y){
     long long upper = (1LL << 24) - 1;
     long long num = rand() % upper;
     return num;
@@ -170,7 +170,7 @@ public:
             long long k = h(value) % (1LL << (t + 1));
             if (k != index_to_expand) {
                 newPage.page[newPage.last_pos] = value;
-                newPage.last_pos++
+                newPage.last_pos++;
                 oldPage.page[i] = 0; // Marcar como movido
             }
         }
@@ -186,6 +186,11 @@ public:
 
     // Inserta un elemento en la página P. Si la página está llena, inserta en la página enlazada.
     void insertInPage(long long x, Page& P){
+        for (int i = 0; i < P.last_pos; ++i){
+            if (P.page[i] == x){
+                return;
+            }
+        }
         //std::cout<<"ultimo insertado en pagina actual: "<<P.last_pos<<"\n";
         if (P.last_pos >= PAGE_SIZE) {
             if(P.linkedPage == nullptr){
