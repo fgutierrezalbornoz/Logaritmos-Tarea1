@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <cstdlib>
+#include <fstream>
 
 constexpr size_t MAX_SIZE = 1024;  // Tamaño máximo de una página en bytes.
 constexpr size_t ELE_SIZE = sizeof(long long);  // Tamaño de un elemento long long (8 bytes).
@@ -209,17 +210,19 @@ public:
 int main(){
     int num_pages = 1;
     HashTable hT(num_pages);
-    
-    for (int i = 0; i < 257; ++i){
+    std::ofstream file;
+    file.open("costo_promedio.txt");
+    long long maxnum = 400LL;
+    for (long long i = 10; i <= maxnum; ++i){
+        std::cout << i << "\n";
         hT.insert(i);
-        if (i == 127){
-            std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
-        }
-        if (i == 200){
-            std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+        if (i%10LL == 0LL){
+            //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+            file << i << " " << hT.searchMeanCost() << "\n";
         }
     }
-    hT.printHT();
+    file.close();
+    //hT.printHT();
     std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
 
     return 0;
