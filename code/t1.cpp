@@ -28,8 +28,8 @@ public:
     Page* linkedPage;  // Puntero a otra página en caso de rebalse (colisiones).
 
     // Constructor inicializa la página con ceros.
-    Page() {
-        std::fill(std::begin(page), std::end(page), 0);
+    Page() : linkedPage(nullptr) {
+    std::fill(std::begin(page), std::end(page), 0);
     }
 
     // Imprime los elementos de la página y de cualquier página enlazada.
@@ -212,7 +212,7 @@ int main(){
     HashTable hT(num_pages);
     std::ofstream file;
     file.open("costo_promedio.txt");
-    long long maxnum = 400LL;
+    long long maxnum = 4000LL;
     for (long long i = 10; i <= maxnum; ++i){
         std::cout << i << "\n";
         hT.insert(i);
