@@ -246,14 +246,14 @@ int main(){
     //hT.printHT();
     //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
     for (long long i = (1LL << 10); i <= (1LL << 24); i *= 2LL){
+        std::cout << "i: " << i << "\n";
         file.open("costo_promedio" + std::to_string(i) + ".csv", std::ios::app);
         file << "número de elementos, costo promedio\n";
-        std::cout << "i: " << i << "\n";
         for (long long k = 0; k < i; ++k){
             hT.insert(k);
-            if (k%10LL == 0LL){
-                std::cout << k << "\n";
-            }
+            //if (k%10LL == 0LL){
+            //    std::cout << k << "\n";
+            //}
             file << k << "," << hT.searchMeanCost() << "\n";
         }
         file.close();
