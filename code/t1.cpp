@@ -77,6 +77,7 @@ private:
     int p;                  // Número de páginas
     int t=0;
     std::vector<Page> pages; // Vector para almacenar las páginas
+    long long total_io_cost = 0;   // Acumula el costo Total Real
 
 public:
     // Constructor que inicializa la clase con el número de páginas
@@ -92,13 +93,14 @@ public:
         if (index < 0 || index >= p) {
             throw std::out_of_range("Índice de página fuera de rango.");
         }
+        total_io_cost++;  // Costo de leer la página
         return pages[index];
     }
 
     // Asigna índices a cada página en la tabla.
     void fill_page_index(){
         for(int i=0;i<p;++i){
-            Page& page = getPage(i);
+            Page& page = pages[i];
             page.page_index = i;
         }
     }
@@ -110,6 +112,11 @@ public:
 
     int gett() const {
         return t;
+    }
+
+    // Método para obtener el costo Total real
+    long long getTotalIOCost() const {
+        return total_io_cost;
     }
 
     //Imprime todas las páginas
@@ -173,7 +180,9 @@ public:
                 newPage.page[newPage.last_pos] = value;
                 newPage.last_pos++;
                 oldPage.page[i] = 0; // Marcar como movido
+                total_io_cost++;
             }
+            total_io_cost++;
         }
         // Compactar la página original
         oldPage.last_pos = 0;
@@ -203,6 +212,7 @@ public:
         }
         P.page[P.last_pos] = x;
         P.last_pos++;
+        total_io_cost++;
         return;
     }
 };
@@ -213,17 +223,18 @@ int main(){
     std::ofstream file;
     file.open("costo_promedio.txt");
     long long maxnum = 4000LL;
-    for (long long i = 10; i <= maxnum; ++i){
+    long long start = 10;
+    for (long long i = start; i <= maxnum; ++i){
         std::cout << i << "\n";
         hT.insert(i);
         if (i%10LL == 0LL){
-            //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
-            file << i << " " << hT.searchMeanCost() << "\n";
+            //std::cout << "el costo real promedio es:
+            file << i << " " << hT.getTotalIOCost() << "\n";
         }
     }
     file.close();
     //hT.printHT();
-    std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+    std::cout << "el costo real promedio es: " << hT.getTotalIOCost()/(maxnum - start + 1) << "\n";
 
     return 0;
 }
