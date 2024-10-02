@@ -1,9 +1,9 @@
 // Código base Francisco
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <math.h>
 #include <cstdlib>
-#include <fstream>
 
 constexpr size_t MAX_SIZE = 1024;  // Tamaño máximo de una página en bytes.
 constexpr size_t ELE_SIZE = sizeof(long long);  // Tamaño de un elemento long long (8 bytes).
@@ -187,6 +187,8 @@ public:
 
     // Inserta un elemento en la página P. Si la página está llena, inserta en la página enlazada.
     void insertInPage(long long x, Page& P){
+        // Se revisa si el elemento ya existe en la página, si no está se prosigue 
+        // con la inserción
         for (int i = 0; i < P.last_pos; ++i){
             if (P.page[i] == x){
                 return;
@@ -205,25 +207,58 @@ public:
         P.last_pos++;
         return;
     }
+
+    // Limpia la tabla hash
+    void clean(){
+        for(int i = 0; i < p; ++i){
+            Page &page = pages[i];
+            page.last_pos = 0;
+            if(page.linkedPage != nullptr){
+                delete page.linkedPage;
+                page.linkedPage = nullptr;
+            }
+        }
+        pages.clear();
+        p = 1;
+        t = 0;
+        pages.resize(p);
+        pages[0] = Page();
+        fill_page_index();
+    }
 };
 
 int main(){
     int num_pages = 1;
     HashTable hT(num_pages);
     std::ofstream file;
-    file.open("costo_promedio.txt");
-    long long maxnum = 4000LL;
-    for (long long i = 10; i <= maxnum; ++i){
-        std::cout << i << "\n";
-        hT.insert(i);
-        if (i%10LL == 0LL){
-            //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
-            file << i << " " << hT.searchMeanCost() << "\n";
-        }
-    }
-    file.close();
+    //file.open("costo_promedio.csv");
+    //file << "número de elementos, costo promedio\n";
+    //long long maxnum = 4000LL;
+    //for (long long i = 10; i <= maxnum; ++i){
+    //    std::cout << i << "\n";
+    //    hT.insert(i);
+    //    if (i%10LL == 0LL){
+    //        //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+    //        file << i << "," << hT.searchMeanCost() << "\n";
+    //    }
+    //}
+    //file.close();
     //hT.printHT();
-    std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+    //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
+    for (long long i = (1LL << 10); i <= (1LL << 24); i *= 2LL){
+        file.open("costo_promedio" + std::to_string(i) + ".csv", std::ios::app);
+        file << "número de elementos, costo promedio\n";
+        std::cout << "i: " << i << "\n";
+        for (long long k = 0; k < i; ++k){
+            hT.insert(k);
+            if (k%10LL == 0LL){
+                std::cout << k << "\n";
+            }
+            file << k << "," << hT.searchMeanCost() << "\n";
+        }
+        file.close();
+        hT.clean();
+    }
 
     return 0;
 }
