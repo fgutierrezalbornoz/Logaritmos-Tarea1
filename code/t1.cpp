@@ -133,6 +133,7 @@ public:
         newPage.page_index = p;
         pages.push_back(newPage);
         p++;
+        total_io_cost++;
         if (p == (1 << (t + 1))) {
             t++;
         }
@@ -184,12 +185,52 @@ public:
             }
             total_io_cost++;
         }
+
+        Page* currentPage = &oldPage;
+        while (currentPage != nullptr) {
+            for (int i = 0; i < currentPage->last_pos; ++i) {
+                long long value = currentPage->page[i];
+                long long k = h(value) % (1LL << (t + 1)); 
+
+                if (k != index_to_expand) {
+                    insertInPage(value, newPage);
+                    currentPage->page[i] = 0;  // Marcar como movido
+                }
+                total_io_cost++;
+            }
+            total_io_cost++;
+            currentPage = currentPage->linkedPage;  // Avanzamos a la página enlazada (si existe)
+        }
+
         // Compactar la página original
         oldPage.last_pos = 0;
         for (int i = 0; i < PAGE_SIZE; ++i) {
             if (oldPage.page[i] != 0) {
                 oldPage.page[oldPage.last_pos++] = oldPage.page[i];
             }
+        }
+
+        // Eliminar páginas enlazadas que ya no sean necesarias
+        Page* prevPage = &oldPage;
+        Page* currentLinkedPage = oldPage.linkedPage;
+        while (currentLinkedPage != nullptr) {
+            bool is_empty = true;
+            for (int i = 0; i < currentLinkedPage->last_pos; ++i) {
+                if (currentLinkedPage->page[i] != 0) {
+                    is_empty = false;
+                    break;
+                }
+            }
+            if (is_empty) {
+                delete currentLinkedPage;
+                prevPage->linkedPage = nullptr;
+                total_io_cost++;
+                break;
+            } else {
+                prevPage = currentLinkedPage;
+                currentLinkedPage = currentLinkedPage->linkedPage;
+            }
+            total_io_cost++;
         }
         return;
     }
@@ -206,6 +247,7 @@ public:
             if(P.linkedPage == nullptr){
                 //std::cout<<"la página linkeada no ha sido iniciada\n";
                 P.setLinkedPage(P.page_index);
+                total_io_cost++;
             }
             insertInPage(x, *P.linkedPage);
             return;
@@ -229,7 +271,7 @@ int main(){
         hT.insert(i);
         if (i%10LL == 0LL){
             //std::cout << "el costo real promedio es:
-            file << i << " " << hT.getTotalIOCost() << "\n";
+            file << i << " " << hT.getTotalIOCost()/(i - start + 1) <<"\n";
         }
     }
     file.close();
