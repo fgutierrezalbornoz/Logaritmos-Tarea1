@@ -4,6 +4,7 @@
 #include <math.h>
 #include <cstdlib>
 #include <fstream>
+#include <sys/stat.h>
 
 constexpr size_t MAX_SIZE = 1024;  // Tamaño máximo de una página en bytes.
 constexpr size_t ELE_SIZE = sizeof(long long);  // Tamaño de un elemento long long (8 bytes).
@@ -240,20 +241,25 @@ int main(){
     int num_pages = 1;
     HashTable hT(num_pages);
     std::ofstream file;
-    file.open("costo_promedio.txt");
-    long long maxnum = 4000LL;
-    long long start = 10;
-    for (long long i = start; i <= maxnum; ++i){
-        std::cout << i << "\n";
-        hT.insert(i);
-        if (i%10LL == 0LL){
-            //std::cout << "el costo real promedio es:
-            file << i << " " << hT.getTotalIOCost() << "\n";
+    std::vector<ssize_t> cValues;
+    for (size_t i = 5; i <= (size_t)100; i += 5){
+        cValues.push_back(i);
+    }
+    mkdir("/data", 0777);
+    for (size_t c : cValues){
+        for (long long k = (1LL << 10); k <= (1LL << 23); k *= 2){
+            std::cout << "c: " << c << " k: " << k << "\n";
+            std::string filename = "/data/c" + std::to_string(c) + "_" + std::to_string(k) + ".csv";
+            file.open(filename);
+            file << "elemento insertado,costo promedio, costo real, costo real promedio\n";
+            for (long long i = 1LL; i <= k; ++i){
+                hT.insert(i);
+                file << i << "," << hT.searchMeanCost() << "," << hT.getTotalIOCost() << "," << hT.getTotalIOCost()/i << "\n";
+            }
+            file.close();
+            hT.clean();
         }
     }
-    file.close();
-    //hT.printHT();
-    std::cout << "el costo real promedio es: " << hT.getTotalIOCost()/(maxnum - start + 1) << "\n";
 
     return 0;
 }
