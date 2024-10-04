@@ -281,7 +281,11 @@ int main() {
     std::ofstream file;
     std::vector<ssize_t> cValues;
     
-    for (size_t i = 10; i <= (size_t)100; i += 10) {
+    for (size_t i = 1; i <= (size_t)10; i ++) {
+        cValues.push_back(i);
+    }
+
+    for (size_t i = 10; i <= (size_t)50; i += 10) {
         cValues.push_back(i);
     }
 
@@ -291,7 +295,8 @@ int main() {
         std::string filename = std::to_string(max_cost) + ".csv";
         file.open(filename);
         file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
-        long long maxnum = 1LL << 24;
+        //long long maxnum = 1LL << 24;
+        long long maxnum = 10000LL;
         for (long long i = 1; i <= maxnum; ++i){
             std::cout << "i: " << i << "\n";
             long long random_number = std::rand(); // Genera un número aleatorio simple
