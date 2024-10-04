@@ -257,6 +257,20 @@ public:
         total_io_cost++;
         return;
     }
+
+    // Porcentaje de llenado promedio de las páginas.
+    double averageFillPercentage() {
+        long long fill = 0;
+        long long total_capacity = p * PAGE_SIZE;
+
+        for (int i = 0; i < p; ++i) {
+            fill += pages[i].last_pos;
+        }
+
+        // Calcula el porcentaje de llenado
+        double percentage = (static_cast<double>(fill) / total_capacity) * 100.0;
+        return percentage;
+    }
 };
 
 int main(){
@@ -265,18 +279,18 @@ int main(){
     std::ofstream file;
     file.open("costo_promedio.txt");
     long long maxnum = 4000LL;
-    long long start = 10;
-    for (long long i = start; i <= maxnum; ++i){
+    for (long long i = 0; i <= maxnum; ++i){
         std::cout << i << "\n";
-        hT.insert(i);
+        long long random_number = std::rand(); // Genera un número aleatorio simple
+        hT.insert(random_number);
         if (i%10LL == 0LL){
             //std::cout << "el costo real promedio es:
-            file << i << " " << hT.getTotalIOCost()/(i - start + 1) <<"\n";
+            file << i << " " << hT.getTotalIOCost()/(i + 1) << " " << hT.getTotalIOCost() << " " << hT.averageFillPercentage() <<"\n";
         }
     }
     file.close();
     //hT.printHT();
-    std::cout << "el costo real promedio es: " << hT.getTotalIOCost()/(maxnum - start + 1) << "\n";
+    std::cout << "el costo real promedio es: " << hT.getTotalIOCost()/(maxnum + 1) << "\n";
 
     return 0;
 }
