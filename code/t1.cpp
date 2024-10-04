@@ -272,43 +272,24 @@ public:
         return percentage;
     }
 
-        // Limpia la tabla hash
-    void clean(){
-        for(int i = 0; i < p; ++i){
-            Page &page = pages[i];
-            page.last_pos = 0;
-            if(page.linkedPage != nullptr){
-                delete page.linkedPage;
-                page.linkedPage = nullptr;
-            }
-        }
-        pages.clear();
-        p = 1;
-        t = 0;
-        pages.resize(p);
-        pages[0] = Page();
-        fill_page_index();
-    }
+    
 };
 
 int main(){
     int num_pages = 1;
     HashTable hT(num_pages);
     std::ofstream file;
-    file.open("costo_promedio.txt");
-    long long maxnum = 4000LL;
-    for (long long i = 0; i <= maxnum; ++i){
-        std::cout << i << "\n";
+    file.open("costo_promedio.csv", std::ios::app);
+    file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
+    long long maxnum = 10000;
+    for (long long i = 1; i <= maxnum; ++i){
+        std::cout << "i: " << i << "\n";
         long long random_number = std::rand(); // Genera un número aleatorio simple
-        hT.insert(random_number);
-        if (i%10LL == 0LL){
-            //std::cout << "el costo real promedio es:
-            file << i << " " << hT.getTotalIOCost()/(i + 1) << " " << hT.getTotalIOCost() << " " << hT.averageFillPercentage() <<"\n";
+        hT.insert(random_number + 1);
+        if (i%1024LL == 0LL) {
+            file << i << "," <<  hT.getTotalIOCost()/(i + 1) << "," <<  hT.getTotalIOCost() << "," <<  hT.averageFillPercentage() << "\n";
         }
     }
     file.close();
-    //hT.printHT();
-    std::cout << "el costo real promedio es: " << hT.getTotalIOCost()/(maxnum + 1) << "\n";
-
     return 0;
 }
