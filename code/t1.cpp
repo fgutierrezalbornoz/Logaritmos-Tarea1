@@ -8,7 +8,7 @@
 constexpr size_t MAX_SIZE = 1024;  // Tamaño máximo de una página en bytes.
 constexpr size_t ELE_SIZE = sizeof(long long);  // Tamaño de un elemento long long (8 bytes).
 constexpr size_t PAGE_SIZE = MAX_SIZE / ELE_SIZE; // Número máximo de elementos que caben en una página (128 elementos).
-constexpr size_t MAX_COST = 3; // Costo máximo promedio permitido
+size_t max_cost = 1; // Costo máximo promedio permitido
 
 // Función de Hash h(y)
 // Devuelve un valor random entre 0 y 2^64 − 1 para cualquier elemento
@@ -151,7 +151,7 @@ public:
             insertInPage(x, pages[k-(1LL << t)]);
         }
         int sMC = searchMeanCost();
-        if (sMC > MAX_COST){
+        if (sMC > max_cost){
             expand();
             redistribute();
         }
@@ -275,21 +275,32 @@ public:
     
 };
 
-int main(){
+int main() {
     int num_pages = 1;
     HashTable hT(num_pages);
     std::ofstream file;
-    file.open("costo_promedio.csv", std::ios::app);
-    file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
-    long long maxnum = 10000;
-    for (long long i = 1; i <= maxnum; ++i){
-        std::cout << "i: " << i << "\n";
-        long long random_number = std::rand(); // Genera un número aleatorio simple
-        hT.insert(random_number + 1);
-        if (i%1024LL == 0LL) {
-            file << i << "," <<  hT.getTotalIOCost()/(i + 1) << "," <<  hT.getTotalIOCost() << "," <<  hT.averageFillPercentage() << "\n";
-        }
+    std::vector<ssize_t> cValues;
+    
+    for (size_t i = 10; i <= (size_t)100; i += 10) {
+        cValues.push_back(i);
     }
-    file.close();
+
+    // Itera sobre los valores de cValues
+    for (size_t c : cValues) {
+        max_cost = c;  // Cambia el valor de max_cost en cada iteración
+        std::string filename = std::to_string(max_cost) + ".csv";
+        file.open(filename);
+        file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
+        long long maxnum = 1LL << 24;
+        for (long long i = 1; i <= maxnum; ++i){
+            std::cout << "i: " << i << "\n";
+            long long random_number = std::rand(); // Genera un número aleatorio simple
+            hT.insert(random_number + 1);
+            if ((i & (i - 1)) == 0 && i >= (1LL << 10) && i <= (1LL << 24)) {
+                file << i << "," <<  hT.getTotalIOCost()/(i + 1) << "," <<  hT.getTotalIOCost() << "," <<  hT.averageFillPercentage() << "\n";
+            }
+        }
+        file.close();
+    }    
     return 0;
 }
