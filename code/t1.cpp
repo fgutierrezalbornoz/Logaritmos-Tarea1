@@ -271,6 +271,24 @@ public:
         double percentage = (static_cast<double>(fill) / total_capacity) * 100.0;
         return percentage;
     }
+
+        // Limpia la tabla hash
+    void clean(){
+        for(int i = 0; i < p; ++i){
+            Page &page = pages[i];
+            page.last_pos = 0;
+            if(page.linkedPage != nullptr){
+                delete page.linkedPage;
+                page.linkedPage = nullptr;
+            }
+        }
+        pages.clear();
+        p = 1;
+        t = 0;
+        pages.resize(p);
+        pages[0] = Page();
+        fill_page_index();
+    }
 };
 
 int main(){
