@@ -272,7 +272,23 @@ public:
         return percentage;
     }
 
-    
+    // Limpia la tabla hash
+    void clean(){
+        for(int i = 0; i < p; ++i){
+            Page &page = pages[i];
+            page.last_pos = 0;
+            if(page.linkedPage != nullptr){
+                delete page.linkedPage;
+                page.linkedPage = nullptr;
+            }
+        }
+        pages.clear();
+        p = 1;
+        t = 0;
+        pages.resize(p);
+        pages[0] = Page();
+        fill_page_index();
+    }
 };
 
 int main() {
@@ -295,8 +311,7 @@ int main() {
         std::string filename = std::to_string(max_cost) + ".csv";
         file.open(filename);
         file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
-        //long long maxnum = 1LL << 24;
-        long long maxnum = 10000LL;
+        long long maxnum = 1LL << 24;
         for (long long i = 1; i <= maxnum; ++i){
             std::cout << "i: " << i << "\n";
             long long random_number = std::rand(); // Genera un número aleatorio simple
@@ -305,6 +320,7 @@ int main() {
                 file << i << "," <<  hT.getTotalIOCost()/(i + 1) << "," <<  hT.getTotalIOCost() << "," <<  hT.averageFillPercentage() << "\n";
             }
         }
+        hT.clean();
         file.close();
     }    
     return 0;
