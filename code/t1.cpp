@@ -1,4 +1,3 @@
-// Código base Francisco
 #include <iostream>
 #include <vector>
 #include <math.h>
