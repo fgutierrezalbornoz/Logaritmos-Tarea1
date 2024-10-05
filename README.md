@@ -24,7 +24,7 @@ El código hace uso de las siguientes bibliotecas:
 Puedes compilar el código utilizando un compilador como g++ de la siguiente forma:
 
 ```
-g++ -o t1 t1.cpp
+g++ t1.cpp -o t1
 ```
 
 ## Ejecución
@@ -51,7 +51,7 @@ El código inserta 2^24 elementos en la tabla hash para diferentes valores de ma
 
 *Variables:*
 
-- max_cost: Costo promedio de búsqueda máximo permitido. Si el costo promedio lo excede, la tabla se expande.
+- max_cost: Costo promedio de búsqueda máximo permitido (Cmax). Si el costo promedio lo excede, la tabla se expande.
 
 *Funciones:*
 
@@ -119,3 +119,14 @@ La clase Page (Página) representa una página en la tabla hash. Almacena elemen
 - initialize(int n): Inicializa una página con su índice (page_index) y resetea sus valores.
 
 - cost(): Calcula el costo de la búsqueda, teniendo en cuenta las páginas enlazadas. Si hay una página enlazada, suma 1 al costo por cada página adicional.
+
+
+## ¿Cómo funciona?:
+
+Se crea un HashTable con una página que se inicializa con todos los elementos de page[] en cero.
+
+El main sigue un for para insertar 2^24 números aleatorios, para Cmax (MAX_COST) de 1 a 10 y luego de 10 en 10 hasta 70.
+
+`insert()` se preocupa de ver en qué página se insertará. Si al insertar se supera el costo promedio máximo de búsqueda, se expande la tabla de hashing (`expand()`) y se redistribuyen los valores insertados (`redistribute()`).
+
+La inserción como tal la realiza `insertinPage` esta función checkea si hay espacio o no, si es que hay, inserta, si no, se crea una `LinkedPage` para almacenar los elementos de rebalse.
