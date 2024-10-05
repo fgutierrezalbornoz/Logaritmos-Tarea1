@@ -1,4 +1,3 @@
-// Código base Francisco
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,17 +7,15 @@
 constexpr size_t MAX_SIZE = 1024;  // Tamaño máximo de una página en bytes.
 constexpr size_t ELE_SIZE = sizeof(long long);  // Tamaño de un elemento long long (8 bytes).
 constexpr size_t PAGE_SIZE = MAX_SIZE / ELE_SIZE; // Número máximo de elementos que caben en una página (128 elementos).
-constexpr size_t MAX_COST = 3; // Costo máximo promedio permitido
+size_t max_cost = 1; // Costo máximo promedio permitido
 
 // Función de Hash h(y)
 // Devuelve un valor random entre 0 y 2^64 − 1 para cualquier elemento
 long long h(long long y){
-    long long upper = (1LL << 24) - 1;
+    long long upper = (1LL << 64) - 1;
     long long num = rand() % upper;
     return num;
 }
-
-
 
 class Page {
 public:
@@ -77,6 +74,7 @@ private:
     int p;                  // Número de páginas
     int t=0;
     std::vector<Page> pages; // Vector para almacenar las páginas
+    long long total_io_cost = 0;   // Acumula el costo Total Real
 
 public:
     // Constructor que inicializa la clase con el número de páginas
@@ -92,13 +90,14 @@ public:
         if (index < 0 || index >= p) {
             throw std::out_of_range("Índice de página fuera de rango.");
         }
+        total_io_cost++;  // Costo de leer la página
         return pages[index];
     }
 
     // Asigna índices a cada página en la tabla.
     void fill_page_index(){
         for(int i=0;i<p;++i){
-            Page& page = getPage(i);
+            Page& page = pages[i];
             page.page_index = i;
         }
     }
@@ -110,6 +109,11 @@ public:
 
     int gett() const {
         return t;
+    }
+
+    // Método para obtener el costo Total real
+    long long getTotalIOCost() const {
+        return total_io_cost;
     }
 
     //Imprime todas las páginas
@@ -126,6 +130,7 @@ public:
         newPage.page_index = p;
         pages.push_back(newPage);
         p++;
+        total_io_cost++;
         if (p == (1 << (t + 1))) {
             t++;
         }
@@ -143,7 +148,7 @@ public:
             insertInPage(x, pages[k-(1LL << t)]);
         }
         int sMC = searchMeanCost();
-        if (sMC > MAX_COST){
+        if (sMC > max_cost){
             expand();
             redistribute();
         }
@@ -173,14 +178,56 @@ public:
                 newPage.page[newPage.last_pos] = value;
                 newPage.last_pos++;
                 oldPage.page[i] = 0; // Marcar como movido
+                total_io_cost++;
             }
+            total_io_cost++;
         }
+
+        Page* currentPage = &oldPage;
+        while (currentPage != nullptr) {
+            for (int i = 0; i < currentPage->last_pos; ++i) {
+                long long value = currentPage->page[i];
+                long long k = h(value) % (1LL << (t + 1)); 
+
+                if (k != index_to_expand) {
+                    insertInPage(value, newPage);
+                    currentPage->page[i] = 0;  // Marcar como movido
+                }
+                total_io_cost++;
+            }
+            total_io_cost++;
+            currentPage = currentPage->linkedPage;  // Avanzamos a la página enlazada (si existe)
+        }
+
         // Compactar la página original
         oldPage.last_pos = 0;
         for (int i = 0; i < PAGE_SIZE; ++i) {
             if (oldPage.page[i] != 0) {
                 oldPage.page[oldPage.last_pos++] = oldPage.page[i];
             }
+        }
+
+        // Eliminar páginas enlazadas que ya no sean necesarias
+        Page* prevPage = &oldPage;
+        Page* currentLinkedPage = oldPage.linkedPage;
+        while (currentLinkedPage != nullptr) {
+            bool is_empty = true;
+            for (int i = 0; i < currentLinkedPage->last_pos; ++i) {
+                if (currentLinkedPage->page[i] != 0) {
+                    is_empty = false;
+                    break;
+                }
+            }
+            if (is_empty) {
+                delete currentLinkedPage;
+                prevPage->linkedPage = nullptr;
+                total_io_cost++;
+                break;
+            } else {
+                prevPage = currentLinkedPage;
+                currentLinkedPage = currentLinkedPage->linkedPage;
+            }
+            total_io_cost++;
         }
         return;
     }
@@ -199,13 +246,29 @@ public:
             if(P.linkedPage == nullptr){
                 //std::cout<<"la página linkeada no ha sido iniciada\n";
                 P.setLinkedPage(P.page_index);
+                total_io_cost++;
             }
             insertInPage(x, *P.linkedPage);
             return;
         }
         P.page[P.last_pos] = x;
         P.last_pos++;
+        total_io_cost++;
         return;
+    }
+
+    // Porcentaje de llenado promedio de las páginas.
+    double averageFillPercentage() {
+        long long fill = 0;
+        long long total_capacity = p * PAGE_SIZE;
+
+        for (int i = 0; i < p; ++i) {
+            fill += pages[i].last_pos;
+        }
+
+        // Calcula el porcentaje de llenado
+        double percentage = (static_cast<double>(fill) / total_capacity) * 100.0;
+        return percentage;
     }
 
     // Limpia la tabla hash
@@ -227,38 +290,37 @@ public:
     }
 };
 
-int main(){
+int main() {
     int num_pages = 1;
     HashTable hT(num_pages);
     std::ofstream file;
-    //file.open("costo_promedio.csv");
-    //file << "número de elementos, costo promedio\n";
-    //long long maxnum = 4000LL;
-    //for (long long i = 10; i <= maxnum; ++i){
-    //    std::cout << i << "\n";
-    //    hT.insert(i);
-    //    if (i%10LL == 0LL){
-    //        //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
-    //        file << i << "," << hT.searchMeanCost() << "\n";
-    //    }
-    //}
-    //file.close();
-    //hT.printHT();
-    //std::cout << "el costo promedio es: " << hT.searchMeanCost() << "\n";
-    for (long long i = (1LL << 10); i <= (1LL << 24); i *= 2LL){
-        std::cout << "i: " << i << "\n";
-        file.open("costo_promedio" + std::to_string(i) + ".csv", std::ios::app);
-        file << "número de elementos, costo promedio\n";
-        for (long long k = 0; k < i; ++k){
-            hT.insert(k);
-            //if (k%10LL == 0LL){
-            //    std::cout << k << "\n";
-            //}
-            file << k << "," << hT.searchMeanCost() << "\n";
-        }
-        file.close();
-        hT.clean();
+    std::vector<ssize_t> cValues;
+    
+    for (size_t i = 1; i <= (size_t)10; i ++) {
+        cValues.push_back(i);
     }
 
+    for (size_t i = 10; i <= (size_t)50; i += 10) {
+        cValues.push_back(i);
+    }
+
+    // Itera sobre los valores de cValues
+    for (size_t c : cValues) {
+        max_cost = c;  // Cambia el valor de max_cost en cada iteración
+        std::string filename = std::to_string(max_cost) + ".csv";
+        file.open(filename);
+        file << "número de elementos, costo real promedio, numero de I/Os, porcentaje de llenado\n";
+        long long maxnum = 1LL << 24;
+        for (long long i = 1; i <= maxnum; ++i){
+            std::cout << "i: " << i << "\n";
+            long long random_number = std::rand(); // Genera un número aleatorio simple
+            hT.insert(random_number + 1);
+            if ((i & (i - 1)) == 0 && i >= (1LL << 10) && i <= (1LL << 24)) {
+                file << i << "," <<  hT.getTotalIOCost()/(i + 1) << "," <<  hT.getTotalIOCost() << "," <<  hT.averageFillPercentage() << "\n";
+            }
+        }
+        hT.clean();
+        file.close();
+    }    
     return 0;
 }
