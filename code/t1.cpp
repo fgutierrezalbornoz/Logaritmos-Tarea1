@@ -12,8 +12,7 @@ size_t max_cost = 1; // Costo máximo promedio permitido
 // Función de Hash h(y)
 // Devuelve un valor random entre 0 y 2^64 − 1 para cualquier elemento
 long long h(long long y){
-    long long upper = (1LL << 64) - 1;
-    long long num = rand() % upper;
+    unsigned long long num = (static_cast<unsigned long long>(rand()) << 32) | rand();
     return num;
 }
 
