@@ -283,6 +283,7 @@ public:
         pages.clear();
         p = 1;
         t = 0;
+        total_io_cost = 0; 
         pages.resize(p);
         pages[0] = Page();
         fill_page_index();
